@@ -1,0 +1,39 @@
+name: Daily History Fact
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  send-fact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: node index.js
+
+      - name: Commit updated history
+        run: |
+          git config --global user.name "history-bot"
+          git config --global user.email "actions@github.com"
+          git add data/shown.json
+          git diff --staged --quiet || git commit -m "Update shown articles history [skip ci]"
+          git push
