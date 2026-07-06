@@ -1,7 +1,7 @@
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 
 async function rewriteAsFact({ articleText, articleTitle, regionName, themeName, themeLens }) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.API_KEY;
 
   // Ограничиваем длину исходного текста, чтобы не тратить лишние токены
   const trimmedText = articleText.slice(0, 6000);

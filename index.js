@@ -12,8 +12,8 @@ async function main() {
   if (!botToken || !chatId) {
     throw new Error("Не заданы TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID");
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error("Не задан ANTHROPIC_API_KEY");
+  if (!process.env.API_KEY) {
+    throw new Error("Не задан API_KEY");
   }
 
   const history = loadHistory();

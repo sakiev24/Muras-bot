@@ -26,7 +26,7 @@
 
 1. Зарегистрироваться на [console.anthropic.com](https://console.anthropic.com)
 2. Создать API-ключ, пополнить баланс (даже пары долларов хватит очень надолго)
-3. Сохранить ключ — это `ANTHROPIC_API_KEY`
+3. Сохранить ключ — это `API_KEY`
 
 ### 4. Залить проект в GitHub
 
@@ -47,7 +47,7 @@ git push -u origin main
 Добавить три секрета:
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
-- `ANTHROPIC_API_KEY`
+- `API_KEY`
 
 ### 6. Проверить
 
