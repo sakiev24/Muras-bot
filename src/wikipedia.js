@@ -1,5 +1,9 @@
 const WIKI_API = "https://ru.wikipedia.org/w/api.php";
-
+const FETCH_OPTIONS = {
+  headers: {
+    "User-Agent": "Mozilla/5.0 (compatible; MurasBot/1.0; +https://github.com/sakiev24/Muras-bot)"
+  }
+};
 // Ищет несколько статей-кандидатов по поисковому запросу
 async function searchArticles(query, limit = 5) {
   const url = `${WIKI_API}?action=query&list=search&srsearch=${encodeURIComponent(
@@ -21,7 +25,7 @@ async function getArticle(title) {
     `&prop=extracts|pageimages&exintro=false&explaintext=true` +
     `&pithumbsize=800&format=json&origin=*`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, FETCH_OPTIONS);
   if (!res.ok) {
     throw new Error(`Wikipedia API error: ${res.status} ${res.statusText}`);
   }
