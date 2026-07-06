@@ -7,6 +7,9 @@ async function searchArticles(query, limit = 5) {
   )}&format=json&srlimit=${limit}&origin=*`;
 
   const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Wikipedia API error: ${res.status} ${res.statusText}`);
+  }
   const data = await res.json();
   return (data.query?.search || []).map((r) => r.title);
 }
@@ -19,6 +22,9 @@ async function getArticle(title) {
     `&pithumbsize=800&format=json&origin=*`;
 
   const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Wikipedia API error: ${res.status} ${res.statusText}`);
+  }
   const data = await res.json();
   const page = Object.values(data.query.pages)[0];
 
