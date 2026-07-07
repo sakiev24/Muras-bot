@@ -1,7 +1,12 @@
-async function sendFact({ chatId, botToken, factText, imageUrl, sourceUrl, regionName, themeName }) {
+async function sendFact({ chatId, botToken, factText, imageUrl, sourceUrl, regionName, themeName, unverified }) {
   const header = `📜 ${regionName} · ${themeName}\n\n`;
-  const footer = `\n\n🔗 Источник: ${sourceUrl}`;
-  const fullText = header + factText + footer;
+  const unverifiedNote = unverified
+    ? `\n\n💭 Это распространённая интерпретация, а не подтверждённый факт.`
+    : "";
+  const footer = sourceUrl
+    ? `\n\n🔗 Источник: ${sourceUrl}`
+    : unverifiedNote;
+  const fullText = header + factText + (sourceUrl ? footer : unverifiedNote);
 
   if (imageUrl) {
     // Telegram caption limit ~1024 символа, если текст длиннее - шлём отдельно
@@ -9,7 +14,7 @@ async function sendFact({ chatId, botToken, factText, imageUrl, sourceUrl, regio
       await sendPhoto(botToken, chatId, imageUrl, fullText);
     } else {
       await sendPhoto(botToken, chatId, imageUrl, header.trim());
-      await sendMessage(botToken, chatId, factText + footer);
+      await sendMessage(botToken, chatId, factText + (sourceUrl ? footer : unverifiedNote));
     }
   } else {
     await sendMessage(botToken, chatId, fullText);

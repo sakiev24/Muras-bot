@@ -27,4 +27,24 @@ function pickRegionAndTheme(regions, themes, lastPick) {
   return { region, theme };
 }
 
-module.exports = { weightedRandom, pickRegionAndTheme };
+// Раз в 3-4 дня в среднем = вероятность ~27% на каждый день
+const POP_CULTURE_PROBABILITY = 0.27;
+
+function shouldPickPopCulture(lastPick) {
+  // не подряд два дня, даже если рандом выпадет второй раз
+  if (lastPick && lastPick.type === "popculture") return false;
+  return Math.random() < POP_CULTURE_PROBABILITY;
+}
+
+function pickPopCultureTopic(topics, shownTitles) {
+  const unseen = topics.filter((t) => !shownTitles.includes(t.title));
+  const pool = unseen.length > 0 ? unseen : topics; // если всё показали - начинаем по новой
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+module.exports = {
+  weightedRandom,
+  pickRegionAndTheme,
+  shouldPickPopCulture,
+  pickPopCultureTopic,
+};

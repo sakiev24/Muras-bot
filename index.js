@@ -1,7 +1,11 @@
-const { REGIONS, THEMES } = require("./src/config");
-const { pickRegionAndTheme } = require("./src/pick");
+const { REGIONS, THEMES, POP_CULTURE_TOPICS } = require("./src/config");
+const {
+  pickRegionAndTheme,
+  shouldPickPopCulture,
+  pickPopCultureTopic,
+} = require("./src/pick");
 const { findUnseenArticle } = require("./src/wikipedia");
-const { rewriteAsFact } = require("./src/claude");
+const { rewriteAsFact, generatePopCultureFact } = require("./src/claude");
 const { sendFact } = require("./src/telegram");
 const { loadHistory, saveHistory } = require("./src/history");
 
@@ -12,14 +16,53 @@ async function main() {
   if (!botToken || !chatId) {
     throw new Error("Не заданы TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID");
   }
-
-  // Support both new `GEMINI_API_KEY` (Google Gemini) and legacy `API_KEY` env var.
-  const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
-  if (!API_KEY) {
-    throw new Error("Не задан GEMINI_API_KEY или API_KEY");
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("Не задан GEMINI_API_KEY");
   }
 
   const history = loadHistory();
+
+  if (shouldPickPopCulture(history.lastPick)) {
+    await runPopCulture(history, { chatId, botToken });
+  } else {
+    await runRegionTheme(history, { chatId, botToken });
+  }
+}
+
+async function runPopCulture(history, { chatId, botToken }) {
+  const topic = pickPopCultureTopic(POP_CULTURE_TOPICS, history.shownTitles);
+
+  console.log(`Выбрано: поп-культура, тема="${topic.title}" (verified=${topic.verified})`);
+
+  const factText = await generatePopCultureFact({
+    topicTitle: topic.title,
+    topicNote: topic.note,
+    verified: topic.verified,
+  });
+
+  if (!factText) {
+    throw new Error("Gemini не вернул текст факта (поп-культура)");
+  }
+
+  await sendFact({
+    chatId,
+    botToken,
+    factText,
+    imageUrl: null,
+    sourceUrl: null,
+    regionName: "Поп-культура и история",
+    themeName: topic.title,
+    unverified: !topic.verified,
+  });
+
+  console.log("Сообщение отправлено в Telegram");
+
+  history.shownTitles.push(topic.title);
+  history.lastPick = { type: "popculture", topic: topic.title };
+  saveHistory(history);
+}
+
+async function runRegionTheme(history, { chatId, botToken }) {
   const { region, theme } = pickRegionAndTheme(REGIONS, THEMES, history.lastPick);
 
   console.log(`Выбрано: регион="${region.name}", тема="${theme.name}"`);
@@ -42,7 +85,7 @@ async function main() {
   });
 
   if (!factText) {
-    throw new Error("Claude не вернул текст факта");
+    throw new Error("Gemini не вернул текст факта");
   }
 
   await sendFact({
@@ -57,9 +100,8 @@ async function main() {
 
   console.log("Сообщение отправлено в Telegram");
 
-  // сохраняем историю
   history.shownTitles.push(article.title);
-  history.lastPick = { region: region.key, theme: theme.key };
+  history.lastPick = { type: "region", region: region.key, theme: theme.key };
   saveHistory(history);
 }
 

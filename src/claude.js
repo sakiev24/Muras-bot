@@ -84,4 +84,62 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
   return text ? text.trim() : null;
 }
 
-module.exports = { rewriteAsFact };
+async function generatePopCultureFact({ topicTitle, topicNote, verified }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  const verifiedInstruction = verified
+    ? `Это задокументированный факт — пиши уверенно, как установленную информацию.`
+    : `Это распространённая интерпретация/толкование, а НЕ официально подтверждённый факт. 
+Обязательно формулируй с оговоркой: "многие видят в этом...", "по одной из трактовок...", 
+"считается, что..." — НЕ подавай это как безусловную истину.`;
+
+  const systemPrompt = `Ты пишешь короткие посты для Telegram-канала об истории, которые 
+иногда связывают исторические/культурные явления с современной поп-культурой 
+(фильмы, игры, музыка).
+
+Тема поста: "${topicTitle}" (${topicNote}).
+
+${verifiedInstruction}
+
+ФОРМАТ СТРОГО ТАКОЙ (два блока, разделённые пустой строкой), 2-3 предложения всего:
+
+[Блок 1]: одно предложение — конкретная связь между произведением и реальным 
+историческим/культурным явлением.
+
+[пустая строка]
+
+[Блок 2]: одно-два предложения — конкретная деталь, объясняющая эту связь.
+
+Что важно:
+- Никакого канцелярита и общих фраз.
+- Пиши конкретно, с именами/деталями, а не абстрактно.
+- НЕ выдумывай дополнительных фактов сверх того, что реально известно по теме — 
+  если сомневаешься в детали, лучше не включать её.
+- Максимум 1 эмодзи.
+- Ответь только текстом поста, без предисловий от себя.`;
+
+  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `Напиши пост про "${topicTitle}".` }],
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  return text ? text.trim() : null;
+}
+
+module.exports = { rewriteAsFact, generatePopCultureFact };
