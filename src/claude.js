@@ -2,7 +2,7 @@ const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 async function rewriteAsFact({ articleText, articleTitle, regionName, themeName, themeLens }) {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
   // Ограничиваем длину исходного текста, чтобы не тратить лишние токены
   const trimmedText = articleText.slice(0, 6000);

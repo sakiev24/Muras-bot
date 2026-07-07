@@ -12,8 +12,11 @@ async function main() {
   if (!botToken || !chatId) {
     throw new Error("Не заданы TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID");
   }
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("Не задан GEMINI_API_KEY");
+
+  // Support both new `GEMINI_API_KEY` (Google Gemini) and legacy `API_KEY` env var.
+  const API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
+  if (!API_KEY) {
+    throw new Error("Не задан GEMINI_API_KEY или API_KEY");
   }
 
   const history = loadHistory();
