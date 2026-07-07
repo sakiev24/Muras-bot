@@ -1,4 +1,9 @@
 {
-  "shownTitles": [],
-  "lastPick": null
+  "shownTitles": [
+    "Индустриализация в СССР"
+  ],
+  "lastPick": {
+    "region": "cis",
+    "theme": "daily"
+  }
 }
