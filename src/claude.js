@@ -1,7 +1,8 @@
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 async function rewriteAsFact({ articleText, articleTitle, regionName, themeName, themeLens }) {
-  const apiKey = process.env.API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   // Ограничиваем длину исходного текста, чтобы не тратить лишние токены
   const trimmedText = articleText.slice(0, 6000);
@@ -24,21 +25,19 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
 - Не используй markdown-заголовки, только обычный текст с эмодзи если уместно.
 - Отвечай только текстом поста, без предисловий и пояснений от себя.`;
 
-  const response = await fetch(ANTHROPIC_API_URL, {
+  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 500,
-      system: systemPrompt,
-      messages: [
+      system_instruction: {
+        parts: [{ text: systemPrompt }],
+      },
+      contents: [
         {
           role: "user",
-          content: `Статья "${articleTitle}":\n\n${trimmedText}`,
+          parts: [{ text: `Статья "${articleTitle}":\n\n${trimmedText}` }],
         },
       ],
     }),
@@ -46,12 +45,12 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Claude API error: ${response.status} ${errText}`);
+    throw new Error(`Gemini API error: ${response.status} ${errText}`);
   }
 
   const data = await response.json();
-  const textBlock = data.content.find((b) => b.type === "text");
-  return textBlock ? textBlock.text.trim() : null;
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  return text ? text.trim() : null;
 }
 
 module.exports = { rewriteAsFact };
