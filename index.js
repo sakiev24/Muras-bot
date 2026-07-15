@@ -1,11 +1,13 @@
 const { REGIONS, THEMES, POP_CULTURE_TOPICS } = require("./src/config");
 const {
   pickRegionAndTheme,
-  shouldPickPopCulture,
+  pickContentType,
   pickPopCultureTopic,
+  pickMuseumRegionAndTheme,
 } = require("./src/pick");
 const { findUnseenArticle } = require("./src/wikipedia");
-const { rewriteAsFact, generatePopCultureFact } = require("./src/claude");
+const { findUnseenArtifact } = require("./src/smithsonian");
+const { rewriteAsFact, generatePopCultureFact, rewriteArtifactAsFact } = require("./src/claude");
 const { sendFact } = require("./src/telegram");
 const { loadHistory, saveHistory } = require("./src/history");
 
@@ -21,9 +23,12 @@ async function main() {
   }
 
   const history = loadHistory();
+  const type = pickContentType(history.lastPick);
 
-  if (shouldPickPopCulture(history.lastPick)) {
+  if (type === "popculture") {
     await runPopCulture(history, { chatId, botToken });
+  } else if (type === "museum") {
+    await runMuseumArtifact(history, { chatId, botToken });
   } else {
     await runRegionTheme(history, { chatId, botToken });
   }
@@ -102,6 +107,49 @@ async function runRegionTheme(history, { chatId, botToken }) {
 
   history.shownTitles.push(article.title);
   history.lastPick = { type: "region", region: region.key, theme: theme.key };
+  saveHistory(history);
+}
+
+async function runMuseumArtifact(history, { chatId, botToken }) {
+  const { region, theme } = pickMuseumRegionAndTheme(REGIONS, THEMES, history.lastPick);
+
+  console.log(`Выбрано: музей (Smithsonian), регион="${region.name}", тема="${theme.name}"`);
+
+  const artifact = await findUnseenArtifact(region.smithsonianTerms, history.shownTitles);
+
+  if (!artifact) {
+    console.warn("Не нашли новый экспонат для этой пары региона/темы. Пропускаем сегодня.");
+    return;
+  }
+
+  console.log(`Экспонат найден: "${artifact.title}"`);
+
+  const factText = await rewriteArtifactAsFact({
+    artifactText: artifact.text,
+    artifactTitle: artifact.title,
+    regionName: region.name,
+    themeName: theme.name,
+    themeLens: theme.lens,
+  });
+
+  if (!factText) {
+    throw new Error("Gemini не вернул текст факта (музей)");
+  }
+
+  await sendFact({
+    chatId,
+    botToken,
+    factText,
+    imageUrl: artifact.imageUrl,
+    sourceUrl: artifact.url,
+    regionName: region.name,
+    themeName: theme.name,
+  });
+
+  console.log("Сообщение отправлено в Telegram");
+
+  history.shownTitles.push(artifact.title);
+  history.lastPick = { type: "museum", region: region.key, theme: theme.key };
   saveHistory(history);
 }
 

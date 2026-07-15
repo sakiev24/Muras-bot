@@ -19,6 +19,11 @@ const REGIONS = [
       "распад СССР", "коллективизация", "Октябрьская революция",
       "индустриализация СССР", "перестройка", "Российская империя реформы",
       "Гражданская война в России", "советская культура",
+    ],
+    // Англоязычные запросы для Smithsonian Open Access (см. src/smithsonian.js)
+    smithsonianTerms: [
+      "Russian Empire", "Soviet Union propaganda", "Russian Revolution 1917",
+      "Bolshevik", "Romanov", "Cold War Soviet",
     ]
   },
   { key: "west", name: "Запад (Европа/США)", weight: 15,
@@ -26,6 +31,10 @@ const REGIONS = [
       "Просвещение", "Французская революция", "Промышленная революция",
       "Великая депрессия", "Реформация", "Возрождение", "Холодная война",
       "Американская революция", "феодализм в Европе",
+    ],
+    smithsonianTerms: [
+      "Enlightenment", "French Revolution", "Industrial Revolution",
+      "American Revolution", "Renaissance", "Victorian era", "Great Depression",
     ]
   },
   { key: "asia", name: "Азия (Восток/Юг)", weight: 10,
@@ -33,18 +42,30 @@ const REGIONS = [
       "династия Тан", "Империя Великих Моголов", "самураи Япония",
       "Опиумные войны", "буддизм история", "Индия колониальный период",
       "Китайская империя реформы",
+    ],
+    smithsonianTerms: [
+      "Tang dynasty China", "Mughal Empire", "samurai armor",
+      "Qing dynasty", "colonial India", "Ming dynasty",
     ]
   },
   { key: "latam", name: "Южная Америка", weight: 5,
     searchTerms: [
       "империя инков", "колонизация Латинской Америки", "война за независимость Латинской Америки",
       "ацтеки", "майя цивилизация", "Симон Боливар",
+    ],
+    smithsonianTerms: [
+      "Inca Empire", "Aztec", "Maya civilization",
+      "Spanish colonial Latin America", "Simon Bolivar",
     ]
   },
   { key: "africa", name: "Африка", weight: 5,
     searchTerms: [
       "Империя Мали", "колонизация Африки", "Аксумское царство",
       "деколонизация Африки", "трансатлантическая работорговля", "Царство Куш",
+    ],
+    smithsonianTerms: [
+      "Mali Empire", "Ashanti", "colonial Africa",
+      "Benin bronze", "Kingdom of Kush", "African art history",
     ]
   },
 ];

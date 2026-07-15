@@ -3,8 +3,8 @@ const { fetchWithRetry } = require("./http");
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-function callGemini(apiKey, body) {
-  return fetchWithRetry(
+async function callGemini(apiKey, body) {
+  const response = await fetchWithRetry(
     `${GEMINI_API_URL}?key=${apiKey}`,
     {
       method: "POST",
@@ -13,6 +13,15 @@ function callGemini(apiKey, body) {
     },
     { context: "Gemini", timeoutMs: 45000 }
   );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  return text ? text.trim() : null;
 }
 
 async function rewriteAsFact({ articleText, articleTitle, regionName, themeName, themeLens }) {
@@ -70,7 +79,7 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
 - Максимум 1 эмодзи, и то не обязательно.
 - Ответь только текстом поста в этом формате, без предисловий от себя.`;
 
-  const response = await callGemini(apiKey, {
+  return callGemini(apiKey, {
     system_instruction: {
       parts: [{ text: systemPrompt }],
     },
@@ -81,15 +90,6 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
       },
     ],
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API error: ${response.status} ${errText}`);
-  }
-
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  return text ? text.trim() : null;
 }
 
 async function generatePopCultureFact({ topicTitle, topicNote, verified }) {
@@ -126,7 +126,7 @@ ${verifiedInstruction}
 - Максимум 1 эмодзи.
 - Ответь только текстом поста, без предисловий от себя.`;
 
-  const response = await callGemini(apiKey, {
+  return callGemini(apiKey, {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents: [
       {
@@ -135,15 +135,66 @@ ${verifiedInstruction}
       },
     ],
   });
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API error: ${response.status} ${errText}`);
-  }
-
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  return text ? text.trim() : null;
 }
 
-module.exports = { rewriteAsFact, generatePopCultureFact };
+async function rewriteArtifactAsFact({ artifactText, artifactTitle, regionName, themeName, themeLens }) {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  // Ограничиваем длину исходного текста, чтобы не тратить лишние токены
+  const trimmedText = artifactText.slice(0, 4000);
+
+  const systemPrompt = `Ты пишешь короткие подписи к историческим постам для Telegram —
+в стиле лаконичных подписей под фото в познавательных пабликах, а не статей.
+
+Тебе дают описание музейного экспоната из архива Смитсоновского института (США).
+Текст описания на английском — переведи и перескажи его СУТЬ по-русски, дословный
+перевод не нужен. Тема выпуска: "${themeName}" (${themeLens}). Регион: ${regionName}.
+
+ФОРМАТ СТРОГО ТАКОЙ (два блока, разделённые пустой строкой):
+
+[Блок 1 — одно предложение]: конкретное, интересное утверждение о том, ЧТО это
+за предмет и когда/где он появился или использовался. Без вводных фраз, сразу суть.
+
+[пустая строка]
+
+[Блок 2 — одно-два предложения]: самая конкретная и неожиданная деталь из описания
+(цифра, имя, обстоятельство), которая заставляет удивиться. Не общее рассуждение,
+а конкретика.
+
+ПРИМЕР нужного стиля (не копируй содержание, только формат):
+"Осколок мраморного камня из закладки монумента Вашингтону, отколотый в 1880-х годах.
+
+Его подобрал коллекционер-любитель, присутствовавший при укреплении фундамента,
+и хранил обёрнутым в марлю — как драгоценность."
+
+Что важно:
+- ВСЕГО 2-3 предложения на весь пост. Не больше. Это не абзац, а короткая подпись.
+- Весь текст СТРОГО на русском языке, даже если источник на английском.
+- Делай акцент на теме "${themeName}", если в описании есть на что опереться.
+- НЕ выдумывай факты и не добавляй ничего сверх того, что есть в описании.
+- НЕ переводи дословно — формулируй заново, живым языком.
+
+ЗАПРЕЩЁННЫЙ ТИП ФАКТА — избегай любой ценой:
+- Даты, длительности, вычисленные интервалы времени как главный смысл факта.
+  Дата может быть фоном, но НЕ должна быть сутью предложения.
+- Общие абстрактные утверждения без конкретного физического объекта, человека,
+  числа предметов или детали, которую можно представить.
+
+- Никакого канцелярита ("колоссальные перемены", "определил облик" и подобных штампов).
+- Максимум 1 эмодзи, и то не обязательно.
+- Ответь только текстом поста в этом формате, без предисловий от себя.`;
+
+  return callGemini(apiKey, {
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `Экспонат "${artifactTitle}":\n\n${trimmedText}` }],
+      },
+    ],
+  });
+}
+
+module.exports = { rewriteAsFact, generatePopCultureFact, rewriteArtifactAsFact };
