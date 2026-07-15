@@ -1,3 +1,5 @@
+const { fetchWithRetry } = require("./http");
+
 const WIKI_API = "https://ru.wikipedia.org/w/api.php";
 
 // Wikipedia требует осмысленный User-Agent, иначе иногда отдаёт ошибку/HTML вместо JSON
@@ -6,22 +8,8 @@ const FETCH_HEADERS = {
   Accept: "application/json",
 };
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// fetch с retry: при 429 или 5xx ждёт и пробует ещё раз (до 3 попыток)
-async function fetchWithRetry(url, attempt = 1) {
-  const res = await fetch(url, { headers: FETCH_HEADERS });
-
-  if ((res.status === 429 || res.status >= 500) && attempt < 3) {
-    const waitMs = attempt * 2000; // 2с, потом 4с
-    console.warn(`Wikipedia вернула ${res.status}, жду ${waitMs}мс и повторяю (попытка ${attempt})`);
-    await sleep(waitMs);
-    return fetchWithRetry(url, attempt + 1);
-  }
-
-  return res;
+function fetchWiki(url) {
+  return fetchWithRetry(url, { headers: FETCH_HEADERS }, { context: "Wikipedia", timeoutMs: 15000 });
 }
 
 // Безопасно парсит ответ как JSON, показывая понятную ошибку если пришёл не JSON
@@ -45,7 +33,7 @@ async function searchArticles(query, limit = 5) {
     query
   )}&format=json&srlimit=${limit}&origin=*`;
 
-  const res = await fetchWithRetry(url);
+  const res = await fetchWiki(url);
   const data = await safeJson(res, "search");
   return (data.query?.search || []).map((r) => r.title);
 }
@@ -57,7 +45,7 @@ async function getArticle(title) {
     `&prop=extracts|pageimages&exintro=false&explaintext=true` +
     `&pithumbsize=800&format=json&origin=*`;
 
-  const res = await fetchWithRetry(url);
+  const res = await fetchWiki(url);
   const data = await safeJson(res, "getArticle");
   const page = Object.values(data.query.pages)[0];
 

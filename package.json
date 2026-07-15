@@ -1,15 +1,21 @@
 {
   "name": "history-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Ежедневный Telegram-бот с историческими фактами: берёт статью из Wikipedia, перерабатывает её через Gemini API в короткий пост",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "node-telegram-bot-api": "^1.1.2"
-  }
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakiev24/Muras-bot.git"
+  },
+  "dependencies": {}
 }

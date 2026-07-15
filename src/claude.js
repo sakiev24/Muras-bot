@@ -1,5 +1,19 @@
+const { fetchWithRetry } = require("./http");
+
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+
+function callGemini(apiKey, body) {
+  return fetchWithRetry(
+    `${GEMINI_API_URL}?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+    { context: "Gemini", timeoutMs: 45000 }
+  );
+}
 
 async function rewriteAsFact({ articleText, articleTitle, regionName, themeName, themeLens }) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -56,22 +70,16 @@ async function rewriteAsFact({ articleText, articleTitle, regionName, themeName,
 - Максимум 1 эмодзи, и то не обязательно.
 - Ответь только текстом поста в этом формате, без предисловий от себя.`;
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await callGemini(apiKey, {
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
     },
-    body: JSON.stringify({
-      system_instruction: {
-        parts: [{ text: systemPrompt }],
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `Статья "${articleTitle}":\n\n${trimmedText}` }],
       },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `Статья "${articleTitle}":\n\n${trimmedText}` }],
-        },
-      ],
-    }),
+    ],
   });
 
   if (!response.ok) {
@@ -118,18 +126,14 @@ ${verifiedInstruction}
 - Максимум 1 эмодзи.
 - Ответь только текстом поста, без предисловий от себя.`;
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `Напиши пост про "${topicTitle}".` }],
-        },
-      ],
-    }),
+  const response = await callGemini(apiKey, {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `Напиши пост про "${topicTitle}".` }],
+      },
+    ],
   });
 
   if (!response.ok) {
