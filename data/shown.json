@@ -13,10 +13,12 @@
     "Киргизы",
     "Узбекистан",
     "Гражданская война в России",
-    "Call of Duty"
+    "Call of Duty",
+    "Мали"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Call of Duty"
+    "type": "region",
+    "region": "africa",
+    "theme": "ideas"
   }
 }
