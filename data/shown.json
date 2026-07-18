@@ -14,11 +14,11 @@
     "Узбекистан",
     "Гражданская война в России",
     "Call of Duty",
-    "Мали"
+    "Мали",
+    "Игра престолов"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "africa",
-    "theme": "ideas"
+    "type": "popculture",
+    "topic": "Игра престолов"
   }
 }
