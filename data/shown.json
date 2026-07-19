@@ -15,10 +15,12 @@
     "Гражданская война в России",
     "Call of Duty",
     "Мали",
-    "Игра престолов"
+    "Игра престолов",
+    "Хорезм"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Игра престолов"
+    "type": "region",
+    "region": "ca",
+    "theme": "ideas"
   }
 }
