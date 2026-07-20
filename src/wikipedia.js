@@ -61,22 +61,43 @@ async function getArticle(title) {
   };
 }
 
-// Основная функция: по списку поисковых фраз региона находит статью,
-// которую ещё не показывали
-async function findUnseenArticle(searchTerms, shownTitles) {
-  // перемешиваем поисковые фразы, чтобы не всегда начинать с первой
-  const shuffled = [...searchTerms].sort(() => Math.random() - 0.5);
+// Собирает пул кандидатов сразу из нескольких поисковых фраз — так среди
+// кандидатов чаще попадаются не только первые попавшиеся "статьи-зонтики"
+// (целая страна/эпоха/процесс), а есть из чего выбирать
+async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, perTerm = 8 } = {}) {
+  const shuffled = [...searchTerms].sort(() => Math.random() - 0.5).slice(0, termsToTry);
+  const seen = new Set();
+  const candidates = [];
 
   for (const term of shuffled) {
-    const candidates = await searchArticles(term, 5);
-    const unseen = candidates.filter((t) => !shownTitles.includes(t));
-
-    if (unseen.length > 0) {
-      const chosenTitle = unseen[Math.floor(Math.random() * unseen.length)];
-      const article = await getArticle(chosenTitle);
-      if (article && article.text && article.text.length > 200) {
-        return article;
+    const titles = await searchArticles(term, perTerm);
+    for (const title of titles) {
+      if (!seen.has(title) && !shownTitles.includes(title)) {
+        seen.add(title);
+        candidates.push(title);
       }
+    }
+  }
+
+  return candidates;
+}
+
+// Основная функция: по списку поисковых фраз региона находит статью,
+// которую ещё не показывали. chooseTitle — необязательный колбэк
+// (title[]) => title[], который переупорядочивает кандидатов от самого
+// многообещающего к наименее (см. claude.js#pickMostInteresting)
+async function findUnseenArticle(searchTerms, shownTitles, { chooseTitle } = {}) {
+  const candidates = await collectCandidates(searchTerms, shownTitles);
+  if (candidates.length === 0) return null;
+
+  const ordered = chooseTitle ? await chooseTitle(candidates) : candidates;
+
+  // ограничиваем число попыток загрузки статьи, чтобы не устроить
+  // десятки запросов к Wikipedia, если подряд попадутся заглушки
+  for (const title of ordered.slice(0, 8)) {
+    const article = await getArticle(title);
+    if (article && article.text && article.text.length > 200) {
+      return article;
     }
   }
 

@@ -27,30 +27,16 @@ function pickRegionAndTheme(regions, themes, lastPick) {
   return { region, theme };
 }
 
-// Раз в 3-4 дня в среднем = вероятность ~27% на каждый день
-const POP_CULTURE_PROBABILITY = 0.22;
-// Музейные экспонаты Smithsonian — примерно раз в 5-6 дней
-const MUSEUM_PROBABILITY = 0.18;
+const CONTENT_TYPES = ["region", "popculture", "museum"];
 
-// Выбирает тип контента дня: обычная статья по региону, поп-культура
-// или музейный экспонат. Один и тот же "редкий" тип (popculture/museum)
-// не должен выпадать два дня подряд — они и так нечастые, повтор выглядит
-// как баг. Обычный региональный тип может повторяться (пары регион+тема
-// внутри него и так не повторяются, см. pickRegionAndTheme).
-function pickContentType(lastPick) {
-  const lastType = lastPick?.type;
-  let type;
-  let attempt = 0;
-
-  do {
-    const r = Math.random();
-    if (r < POP_CULTURE_PROBABILITY) type = "popculture";
-    else if (r < POP_CULTURE_PROBABILITY + MUSEUM_PROBABILITY) type = "museum";
-    else type = "region";
-    attempt++;
-  } while (type !== "region" && type === lastType && attempt < 10);
-
-  return type;
+// Выбирает тип контента дня: обычная статья по региону, поп-культура или
+// музейный экспонат. Все три равновероятны и независимы день ото дня —
+// раньше тут была защита от повтора popculture/museum два дня подряд,
+// но она имела смысл только пока эти типы были редкими на фоне региона
+// (60%). Теперь все типы равноправны, и повтор одного не более "аномален",
+// чем повтор другого — специальный случай только портил бы равномерность.
+function pickContentType() {
+  return CONTENT_TYPES[Math.floor(Math.random() * CONTENT_TYPES.length)];
 }
 
 function pickPopCultureTopic(topics, shownTitles) {

@@ -7,7 +7,12 @@ const {
 } = require("./src/pick");
 const { findUnseenArticle } = require("./src/wikipedia");
 const { findUnseenArtifact } = require("./src/smithsonian");
-const { rewriteAsFact, generatePopCultureFact, rewriteArtifactAsFact } = require("./src/claude");
+const {
+  rewriteAsFact,
+  generatePopCultureFact,
+  rewriteArtifactAsFact,
+  pickMostInteresting,
+} = require("./src/claude");
 const { sendFact } = require("./src/telegram");
 const { loadHistory, saveHistory } = require("./src/history");
 
@@ -23,14 +28,28 @@ async function main() {
   }
 
   const history = loadHistory();
-  const type = pickContentType(history.lastPick);
+  const type = pickContentType();
+  const ctx = { chatId, botToken };
 
+  let posted;
   if (type === "popculture") {
-    await runPopCulture(history, { chatId, botToken });
+    posted = await runPopCulture(history, ctx);
   } else if (type === "museum") {
-    await runMuseumArtifact(history, { chatId, botToken });
+    posted = await runMuseumArtifact(history, ctx);
   } else {
-    await runRegionTheme(history, { chatId, botToken });
+    posted = await runRegionTheme(history, ctx);
+  }
+
+  // Основной выбор мог не найти материала (редко, но возможно) — вместо
+  // тишины в канале пробуем запасной вариант, поп-культура почти всегда
+  // находит что показать
+  if (!posted && type !== "popculture") {
+    console.warn("Основной тип контента ничего не нашёл, пробуем поп-культуру как запасной вариант.");
+    posted = await runPopCulture(history, ctx);
+  }
+
+  if (!posted) {
+    console.warn("Не удалось подготовить пост ни одним из способов сегодня.");
   }
 }
 
@@ -65,6 +84,7 @@ async function runPopCulture(history, { chatId, botToken }) {
   history.shownTitles.push(topic.title);
   history.lastPick = { type: "popculture", topic: topic.title };
   saveHistory(history);
+  return true;
 }
 
 async function runRegionTheme(history, { chatId, botToken }) {
@@ -72,11 +92,14 @@ async function runRegionTheme(history, { chatId, botToken }) {
 
   console.log(`Выбрано: регион="${region.name}", тема="${theme.name}"`);
 
-  const article = await findUnseenArticle(region.searchTerms, history.shownTitles);
+  const article = await findUnseenArticle(region.searchTerms, history.shownTitles, {
+    chooseTitle: (candidates) =>
+      pickMostInteresting(candidates, { regionName: region.name, themeName: theme.name }),
+  });
 
   if (!article) {
     console.warn("Не нашли новую статью для этой пары региона/темы. Пропускаем сегодня.");
-    return;
+    return false;
   }
 
   console.log(`Статья найдена: "${article.title}"`);
@@ -108,6 +131,7 @@ async function runRegionTheme(history, { chatId, botToken }) {
   history.shownTitles.push(article.title);
   history.lastPick = { type: "region", region: region.key, theme: theme.key };
   saveHistory(history);
+  return true;
 }
 
 async function runMuseumArtifact(history, { chatId, botToken }) {
@@ -115,11 +139,14 @@ async function runMuseumArtifact(history, { chatId, botToken }) {
 
   console.log(`Выбрано: музей (Smithsonian), регион="${region.name}", тема="${theme.name}"`);
 
-  const artifact = await findUnseenArtifact(region.smithsonianTerms, history.shownTitles);
+  const artifact = await findUnseenArtifact(region.smithsonianTerms, history.shownTitles, {
+    chooseTitle: (candidates) =>
+      pickMostInteresting(candidates, { regionName: region.name, themeName: theme.name }),
+  });
 
   if (!artifact) {
     console.warn("Не нашли новый экспонат для этой пары региона/темы. Пропускаем сегодня.");
-    return;
+    return false;
   }
 
   console.log(`Экспонат найден: "${artifact.title}"`);
@@ -151,6 +178,7 @@ async function runMuseumArtifact(history, { chatId, botToken }) {
   history.shownTitles.push(artifact.title);
   history.lastPick = { type: "museum", region: region.key, theme: theme.key };
   saveHistory(history);
+  return true;
 }
 
 main().catch((err) => {

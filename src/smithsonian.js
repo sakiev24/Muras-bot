@@ -59,20 +59,38 @@ function toArtifact(row) {
   };
 }
 
-// По списку англоязычных поисковых фраз находит музейный предмет,
-// который ещё не показывали
-async function findUnseenArtifact(searchTerms, shownTitles) {
-  const shuffled = [...searchTerms].sort(() => Math.random() - 0.5);
+// Собирает пул предметов сразу из нескольких поисковых фраз, чтобы было
+// из чего выбирать самый живой вариант, а не первый попавшийся
+async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, rowsPerTerm = 8 } = {}) {
+  const shuffled = [...searchTerms].sort(() => Math.random() - 0.5).slice(0, termsToTry);
+  const pool = new Map(); // title -> artifact
 
   for (const term of shuffled) {
-    const rows = await searchArtifacts(term);
-    const candidates = rows
-      .map(toArtifact)
-      .filter((a) => a && !shownTitles.includes(a.title));
-
-    if (candidates.length > 0) {
-      return candidates[Math.floor(Math.random() * candidates.length)];
+    const rows = await searchArtifacts(term, rowsPerTerm);
+    for (const row of rows) {
+      const artifact = toArtifact(row);
+      if (artifact && !pool.has(artifact.title) && !shownTitles.includes(artifact.title)) {
+        pool.set(artifact.title, artifact);
+      }
     }
+  }
+
+  return pool;
+}
+
+// По списку англоязычных поисковых фраз находит музейный предмет,
+// который ещё не показывали. chooseTitle — необязательный колбэк
+// (title[]) => title[] для сортировки по "интересности" (claude.js)
+async function findUnseenArtifact(searchTerms, shownTitles, { chooseTitle } = {}) {
+  const pool = await collectCandidates(searchTerms, shownTitles);
+  if (pool.size === 0) return null;
+
+  const titles = [...pool.keys()];
+  const ordered = chooseTitle ? await chooseTitle(titles) : titles;
+
+  for (const title of ordered) {
+    const artifact = pool.get(title);
+    if (artifact) return artifact;
   }
 
   return null; // не нашли ничего нового
