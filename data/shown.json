@@ -17,11 +17,11 @@
     "Мали",
     "Игра престолов",
     "Хорезм",
-    "Кыргызстан"
+    "Кыргызстан",
+    "1917"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "kg",
-    "theme": "society"
+    "type": "popculture",
+    "topic": "1917"
   }
 }
