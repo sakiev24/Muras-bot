@@ -21,10 +21,12 @@
     "1917",
     "Зодиак",
     "Люди Икс",
-    "Американская история Икс"
+    "Американская история Икс",
+    "House of Representatives anti-lynching cover"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Американская история Икс"
+    "type": "museum",
+    "region": "west",
+    "theme": "politics"
   }
 }
