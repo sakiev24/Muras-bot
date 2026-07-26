@@ -22,11 +22,12 @@
     "Зодиак",
     "Люди Икс",
     "Американская история Икс",
-    "House of Representatives anti-lynching cover"
+    "House of Representatives anti-lynching cover",
+    "Ормон-хан"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "west",
-    "theme": "politics"
+    "type": "region",
+    "region": "kg",
+    "theme": "consequences"
   }
 }
