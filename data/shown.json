@@ -23,11 +23,11 @@
     "Люди Икс",
     "Американская история Икс",
     "House of Representatives anti-lynching cover",
-    "Ормон-хан"
+    "Ормон-хан",
+    "На западном фронте без перемен"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "kg",
-    "theme": "consequences"
+    "type": "popculture",
+    "topic": "На западном фронте без перемен"
   }
 }
