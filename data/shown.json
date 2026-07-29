@@ -25,10 +25,12 @@
     "House of Representatives anti-lynching cover",
     "Ормон-хан",
     "На западном фронте без перемен",
-    "Сорвиголова"
+    "Сорвиголова",
+    "Гуансюй"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Сорвиголова"
+    "type": "region",
+    "region": "asia",
+    "theme": "consequences"
   }
 }
