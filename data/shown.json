@@ -26,11 +26,11 @@
     "Ормон-хан",
     "На западном фронте без перемен",
     "Сорвиголова",
-    "Гуансюй"
+    "Гуансюй",
+    "Дюна"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "asia",
-    "theme": "consequences"
+    "type": "popculture",
+    "topic": "Дюна"
   }
 }
