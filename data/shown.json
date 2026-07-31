@@ -27,10 +27,12 @@
     "На западном фронте без перемен",
     "Сорвиголова",
     "Гуансюй",
-    "Дюна"
+    "Дюна",
+    "Rank badge"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Дюна"
+    "type": "museum",
+    "region": "asia",
+    "theme": "politics"
   }
 }
