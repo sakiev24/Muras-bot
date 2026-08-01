@@ -28,11 +28,11 @@
     "Сорвиголова",
     "Гуансюй",
     "Дюна",
-    "Rank badge"
+    "Rank badge",
+    "Форрест Гамп"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "asia",
-    "theme": "politics"
+    "type": "popculture",
+    "topic": "Форрест Гамп"
   }
 }
