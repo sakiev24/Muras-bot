@@ -31,10 +31,12 @@
     "Rank badge",
     "Форрест Гамп",
     "Red Dead Redemption / GTA (Rockstar)",
-    "Гладиатор (Ридли Скотт)"
+    "Гладиатор (Ридли Скотт)",
+    "Согдиана (певица)"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Гладиатор (Ридли Скотт)"
+    "type": "region",
+    "region": "ca",
+    "theme": "culture"
   }
 }
