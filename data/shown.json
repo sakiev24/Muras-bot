@@ -32,11 +32,12 @@
     "Форрест Гамп",
     "Red Dead Redemption / GTA (Rockstar)",
     "Гладиатор (Ридли Скотт)",
-    "Согдиана (певица)"
+    "Согдиана (певица)",
+    "French Consular folded letter from Philadelphia to Boston"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "ca",
-    "theme": "culture"
+    "type": "museum",
+    "region": "west",
+    "theme": "society"
   }
 }
