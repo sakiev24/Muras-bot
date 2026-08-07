@@ -34,11 +34,12 @@
     "Гладиатор (Ридли Скотт)",
     "Согдиана (певица)",
     "French Consular folded letter from Philadelphia to Boston",
-    "Секс и перестройка"
+    "Секс и перестройка",
+    "République Française Liberté Égalité"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "cis",
-    "theme": "culture"
+    "type": "museum",
+    "region": "west",
+    "theme": "consequences"
   }
 }
