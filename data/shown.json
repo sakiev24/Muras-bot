@@ -37,11 +37,12 @@
     "Секс и перестройка",
     "République Française Liberté Égalité",
     "Половое воспитание (сериал, 2019)",
-    "Marble-top table from the home of Robert Smalls"
+    "Marble-top table from the home of Robert Smalls",
+    "Тамерлан"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "west",
-    "theme": "consequences"
+    "type": "region",
+    "region": "ca",
+    "theme": "politics"
   }
 }
