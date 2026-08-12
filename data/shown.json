@@ -39,11 +39,11 @@
     "Половое воспитание (сериал, 2019)",
     "Marble-top table from the home of Robert Smalls",
     "Тамерлан",
-    "Невольничий корабль"
+    "Невольничий корабль",
+    "The Last of Us Part II"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "africa",
-    "theme": "ideas"
+    "type": "popculture",
+    "topic": "The Last of Us Part II"
   }
 }
