@@ -43,10 +43,12 @@
     "The Last of Us Part II",
     "Оверлорд",
     "Олдбой",
-    "Nas — Illmatic"
+    "Nas — Illmatic",
+    "Зов предков: Согдиана"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Nas — Illmatic"
+    "type": "region",
+    "region": "ca",
+    "theme": "ideas"
   }
 }
