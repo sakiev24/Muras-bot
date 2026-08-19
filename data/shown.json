@@ -46,10 +46,12 @@
     "Nas — Illmatic",
     "Зов предков: Согдиана",
     "Хранители снов",
-    "Hotel California (Eagles)"
+    "Hotel California (Eagles)",
+    "3c Torch of Enlightenment plate proof"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Hotel California (Eagles)"
+    "type": "museum",
+    "region": "west",
+    "theme": "culture"
   }
 }
