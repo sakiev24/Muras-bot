@@ -47,11 +47,12 @@
     "Зов предков: Согдиана",
     "Хранители снов",
     "Hotel California (Eagles)",
-    "3c Torch of Enlightenment plate proof"
+    "3c Torch of Enlightenment plate proof",
+    "Французская революция (фильм)"
   ],
   "lastPick": {
-    "type": "museum",
+    "type": "region",
     "region": "west",
-    "theme": "culture"
+    "theme": "politics"
   }
 }
