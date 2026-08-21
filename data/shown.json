@@ -48,11 +48,12 @@
     "Хранители снов",
     "Hotel California (Eagles)",
     "3c Torch of Enlightenment plate proof",
-    "Французская революция (фильм)"
+    "Французская революция (фильм)",
+    "1c Four Freedoms plate proof"
   ],
   "lastPick": {
-    "type": "region",
+    "type": "museum",
     "region": "west",
-    "theme": "politics"
+    "theme": "consequences"
   }
 }
