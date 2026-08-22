@@ -49,11 +49,12 @@
     "Hotel California (Eagles)",
     "3c Torch of Enlightenment plate proof",
     "Французская революция (фильм)",
-    "1c Four Freedoms plate proof"
+    "1c Four Freedoms plate proof",
+    "Джанузаков, Торекул"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "west",
-    "theme": "consequences"
+    "type": "region",
+    "region": "kg",
+    "theme": "daily"
   }
 }
