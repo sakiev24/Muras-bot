@@ -50,11 +50,12 @@
     "3c Torch of Enlightenment plate proof",
     "Французская революция (фильм)",
     "1c Four Freedoms plate proof",
-    "Джанузаков, Торекул"
+    "Джанузаков, Торекул",
+    "Великий Волжский путь"
   ],
   "lastPick": {
     "type": "region",
-    "region": "kg",
-    "theme": "daily"
+    "region": "ca",
+    "theme": "philosophy"
   }
 }
