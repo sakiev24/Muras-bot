@@ -51,11 +51,11 @@
     "Французская революция (фильм)",
     "1c Four Freedoms plate proof",
     "Джанузаков, Торекул",
-    "Великий Волжский путь"
+    "Великий Волжский путь",
+    "Битва титанов"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "ca",
-    "theme": "philosophy"
+    "type": "popculture",
+    "topic": "Битва титанов"
   }
 }
