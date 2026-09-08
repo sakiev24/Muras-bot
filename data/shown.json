@@ -66,10 +66,12 @@
     "Hotel California (Eagles)",
     "Олдбой",
     "Игра престолов",
-    "Форрест Гамп"
+    "Форрест Гамп",
+    "Манса Муса"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Форрест Гамп"
+    "type": "region",
+    "region": "africa",
+    "theme": "daily"
   }
 }
