@@ -67,11 +67,12 @@
     "Олдбой",
     "Игра престолов",
     "Форрест Гамп",
-    "Манса Муса"
+    "Манса Муса",
+    "Ахмедова, Юлия Октаевна"
   ],
   "lastPick": {
     "type": "region",
-    "region": "africa",
-    "theme": "daily"
+    "region": "kg",
+    "theme": "philosophy"
   }
 }
