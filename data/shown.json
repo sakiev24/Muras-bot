@@ -71,11 +71,12 @@
     "Ахмедова, Юлия Октаевна",
     "Опиумная война (фильм)",
     "Хранители снов",
-    "Кандакия"
+    "Кандакия",
+    "Creamer, 1774"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "africa",
+    "type": "museum",
+    "region": "asia",
     "theme": "economy"
   }
 }
