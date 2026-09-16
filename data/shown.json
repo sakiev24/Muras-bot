@@ -72,11 +72,11 @@
     "Опиумная война (фильм)",
     "Хранители снов",
     "Кандакия",
-    "Creamer, 1774"
+    "Creamer, 1774",
+    "1917"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "asia",
-    "theme": "economy"
+    "type": "popculture",
+    "topic": "1917"
   }
 }
