@@ -88,10 +88,12 @@
     "1917",
     "Hotel California (Eagles)",
     "Хранители снов",
-    "Red Dead Redemption / GTA (Rockstar)"
+    "Red Dead Redemption / GTA (Rockstar)",
+    "Май-Тобинское сражение"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Red Dead Redemption / GTA (Rockstar)"
+    "type": "region",
+    "region": "kg",
+    "theme": "politics"
   }
 }
