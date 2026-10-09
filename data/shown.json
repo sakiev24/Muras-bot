@@ -89,11 +89,11 @@
     "Hotel California (Eagles)",
     "Хранители снов",
     "Red Dead Redemption / GTA (Rockstar)",
-    "Май-Тобинское сражение"
+    "Май-Тобинское сражение",
+    "Зодиак"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "kg",
-    "theme": "politics"
+    "type": "popculture",
+    "topic": "Зодиак"
   }
 }
