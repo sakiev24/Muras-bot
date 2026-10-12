@@ -92,11 +92,11 @@
     "Май-Тобинское сражение",
     "Зодиак",
     "Форрест Гамп",
-    "Алиахунов, Абдукадыр"
+    "Алиахунов, Абдукадыр",
+    "Red Dead Redemption / GTA (Rockstar)"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "kg",
-    "theme": "philosophy"
+    "type": "popculture",
+    "topic": "Red Dead Redemption / GTA (Rockstar)"
   }
 }
