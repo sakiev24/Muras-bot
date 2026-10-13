@@ -93,10 +93,12 @@
     "Зодиак",
     "Форрест Гамп",
     "Алиахунов, Абдукадыр",
-    "Red Dead Redemption / GTA (Rockstar)"
+    "Red Dead Redemption / GTA (Rockstar)",
+    "Dragonflies"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Red Dead Redemption / GTA (Rockstar)"
+    "type": "museum",
+    "region": "asia",
+    "theme": "consequences"
   }
 }
