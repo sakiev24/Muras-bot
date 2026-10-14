@@ -94,11 +94,11 @@
     "Форрест Гамп",
     "Алиахунов, Абдукадыр",
     "Red Dead Redemption / GTA (Rockstar)",
-    "Dragonflies"
+    "Dragonflies",
+    "Call of Duty"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "asia",
-    "theme": "consequences"
+    "type": "popculture",
+    "topic": "Call of Duty"
   }
 }
