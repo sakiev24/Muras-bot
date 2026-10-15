@@ -95,10 +95,12 @@
     "Алиахунов, Абдукадыр",
     "Red Dead Redemption / GTA (Rockstar)",
     "Dragonflies",
-    "Call of Duty"
+    "Call of Duty",
+    "Боливар (шляпа)"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Call of Duty"
+    "type": "region",
+    "region": "latam",
+    "theme": "daily"
   }
 }
