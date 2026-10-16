@@ -96,11 +96,11 @@
     "Red Dead Redemption / GTA (Rockstar)",
     "Dragonflies",
     "Call of Duty",
-    "Боливар (шляпа)"
+    "Боливар (шляпа)",
+    "Олдбой"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "latam",
-    "theme": "daily"
+    "type": "popculture",
+    "topic": "Олдбой"
   }
 }
