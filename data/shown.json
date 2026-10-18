@@ -98,10 +98,12 @@
     "Call of Duty",
     "Боливар (шляпа)",
     "Олдбой",
-    "Хранители снов"
+    "Хранители снов",
+    "<I>306 - MARTINIQUE - Yon ti ma coumè zébage</I>"
   ],
   "lastPick": {
-    "type": "popculture",
-    "topic": "Хранители снов"
+    "type": "museum",
+    "region": "asia",
+    "theme": "society"
   }
 }
