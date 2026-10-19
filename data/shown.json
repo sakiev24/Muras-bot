@@ -99,11 +99,11 @@
     "Боливар (шляпа)",
     "Олдбой",
     "Хранители снов",
-    "<I>306 - MARTINIQUE - Yon ti ma coumè zébage</I>"
+    "<I>306 - MARTINIQUE - Yon ti ma coumè zébage</I>",
+    "Сорвиголова"
   ],
   "lastPick": {
-    "type": "museum",
-    "region": "asia",
-    "theme": "society"
+    "type": "popculture",
+    "topic": "Сорвиголова"
   }
 }
