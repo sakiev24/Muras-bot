@@ -102,11 +102,11 @@
     "<I>306 - MARTINIQUE - Yon ti ma coumè zébage</I>",
     "Сорвиголова",
     "The Last of Us Part II",
-    "Эмир Бухары"
+    "Эмир Бухары",
+    "The Last of Us Part II"
   ],
   "lastPick": {
-    "type": "region",
-    "region": "ca",
-    "theme": "ideas"
+    "type": "popculture",
+    "topic": "The Last of Us Part II"
   }
 }
