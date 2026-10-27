@@ -47,9 +47,12 @@
     "Dragonflies",
     "Боливар (шляпа)",
     "<I>306 - MARTINIQUE - Yon ti ma coumè zébage</I>",
-    "Эмир Бухары"
+    "Эмир Бухары",
+    "Сеньор Сарка"
   ],
   "lastPick": {
-    "type": "popculture"
+    "type": "region",
+    "region": "west",
+    "theme": "politics"
   }
 }
