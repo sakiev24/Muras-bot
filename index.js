@@ -14,7 +14,7 @@ const {
   pickMostInteresting,
 } = require("./src/claude");
 const { sendFact } = require("./src/telegram");
-const { loadHistory, saveHistory } = require("./src/history");
+const { loadHistory, saveHistory, recordArticle } = require("./src/history");
 
 async function main() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -59,7 +59,9 @@ async function runRegionTheme(history, { chatId, botToken }, { popCulture = fals
 
   console.log(`Выбрано: регион="${region.name}", тема="${theme.name}", поп-культура=${popCulture}`);
 
-  const article = await findUnseenArticle(termsFor(region, theme), history.shownTitles, {
+  const article = await findUnseenArticle(termsFor(region, theme), {
+    excludeTitles: [...history.shownTitles, ...history.recentTitles],
+    usedSections: history.usedSections,
     chooseTitle: (candidates) =>
       pickMostInteresting(candidates, { regionName: region.name, themeName: theme.name }),
   });
@@ -69,7 +71,7 @@ async function runRegionTheme(history, { chatId, botToken }, { popCulture = fals
     return false;
   }
 
-  console.log(`Статья найдена: "${article.title}"`);
+  console.log(`Статья найдена: "${article.title}", раздел "${article.section}"`);
 
   const factArgs = {
     articleText: article.text,
@@ -104,7 +106,7 @@ async function runRegionTheme(history, { chatId, botToken }, { popCulture = fals
 
   console.log("Сообщение отправлено в Telegram");
 
-  history.shownTitles.push(article.title);
+  recordArticle(history, article);
   history.lastPick = {
     type: withPopCulture ? "popculture" : "region",
     region: region.key,

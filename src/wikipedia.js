@@ -38,22 +38,54 @@ async function searchArticles(query, limit = 5) {
   return (data.query?.search || []).map((r) => r.title);
 }
 
-// Забирает полный текст + картинку по названию статьи
+const INTRO = "Введение";
+// Служебные разделы, из которых факта не сделать
+const SKIP_SECTION =
+  /^(См\. также|Примечания|Комментарии|Литература|Ссылки|Источники|Библиография|Галерея)$/i;
+// Заголовки разделов и подразделов в explaintext выглядят как "== X ==" / "=== X ==="
+const SECTION_HEADING = /^(={2,3})\s*([^=].*?)\s*\1$/;
+const MIN_SECTION_LENGTH = 200;
+
+// Режет статью на разделы. Каждый раздел — отдельный источник факта,
+// поэтому большую тему ("Киргизская ССР") можно показывать много раз,
+// каждый раз с другой стороны
+function splitSections(text) {
+  const sections = [];
+  let current = { name: INTRO, lines: [] };
+  for (const line of text.split("\n")) {
+    const heading = line.match(SECTION_HEADING);
+    if (heading) {
+      sections.push(current);
+      current = { name: heading[2], lines: [] };
+    } else {
+      current.lines.push(line);
+    }
+  }
+  sections.push(current);
+
+  return sections
+    .map((s) => ({ name: s.name, text: s.lines.join("\n").trim() }))
+    .filter((s) => !SKIP_SECTION.test(s.name) && s.text.length >= MIN_SECTION_LENGTH);
+}
+
+// Забирает полный текст (по разделам) + картинку по названию статьи.
+// Важно: exintro нельзя передавать вовсе — MediaWiki считает булев параметр
+// включённым при любом значении, и exintro=false отдавал только введение
 async function getArticle(title) {
   const url =
     `${WIKI_API}?action=query&titles=${encodeURIComponent(title)}` +
-    `&prop=extracts|pageimages&exintro=false&explaintext=true` +
+    `&prop=extracts|pageimages&explaintext=true` +
     `&pithumbsize=800&format=json&origin=*`;
 
   const res = await fetchWiki(url);
   const data = await safeJson(res, "getArticle");
   const page = Object.values(data.query.pages)[0];
 
-  if (!page || page.missing !== undefined) return null;
+  if (!page || page.missing !== undefined || !page.extract) return null;
 
   return {
     title: page.title,
-    text: page.extract,
+    sections: splitSections(page.extract),
     imageUrl: page.thumbnail?.source || (await findArticleImage(page.title)),
     url: `https://ru.wikipedia.org/wiki/${encodeURIComponent(
       page.title.replace(/ /g, "_")
@@ -93,7 +125,7 @@ const OFF_TOPIC_TITLE =
 // Собирает пул кандидатов сразу из нескольких поисковых фраз — так среди
 // кандидатов чаще попадаются не только первые попавшиеся "статьи-зонтики"
 // (целая страна/эпоха/процесс), а есть из чего выбирать
-async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, perTerm = 8 } = {}) {
+async function collectCandidates(searchTerms, excludeTitles, { termsToTry = 3, perTerm = 8 } = {}) {
   const shuffled = [...searchTerms].sort(() => Math.random() - 0.5).slice(0, termsToTry);
   const seen = new Set();
   const candidates = [];
@@ -101,7 +133,7 @@ async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, per
   for (const term of shuffled) {
     const titles = await searchArticles(term, perTerm);
     for (const title of titles) {
-      if (!seen.has(title) && !shownTitles.includes(title) && !OFF_TOPIC_TITLE.test(title)) {
+      if (!seen.has(title) && !excludeTitles.includes(title) && !OFF_TOPIC_TITLE.test(title)) {
         seen.add(title);
         candidates.push(title);
       }
@@ -111,12 +143,14 @@ async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, per
   return candidates;
 }
 
-// Основная функция: по списку поисковых фраз региона находит статью,
-// которую ещё не показывали. chooseTitle — необязательный колбэк
-// (title[]) => title[], который переупорядочивает кандидатов от самого
-// многообещающего к наименее (см. claude.js#pickMostInteresting)
-async function findUnseenArticle(searchTerms, shownTitles, { chooseTitle } = {}) {
-  const candidates = await collectCandidates(searchTerms, shownTitles);
+// Основная функция: по списку поисковых фраз региона находит статью
+// с ещё не показанным разделом. excludeTitles — статьи, которые сейчас
+// брать нельзя (исчерпаны или недавно были), usedSections — { title: [раздел] }.
+// chooseTitle — необязательный колбэк (title[]) => title[], который
+// переупорядочивает кандидатов от самого многообещающего к наименее
+// (см. claude.js#pickMostInteresting)
+async function findUnseenArticle(searchTerms, { excludeTitles = [], usedSections = {}, chooseTitle } = {}) {
+  const candidates = await collectCandidates(searchTerms, excludeTitles);
   if (candidates.length === 0) return null;
 
   const ordered = chooseTitle ? await chooseTitle(candidates) : candidates;
@@ -125,9 +159,25 @@ async function findUnseenArticle(searchTerms, shownTitles, { chooseTitle } = {})
   // десятки запросов к Wikipedia, если подряд попадутся заглушки
   for (const title of ordered.slice(0, 8)) {
     const article = await getArticle(title);
-    if (article && article.text && article.text.length > 200) {
-      return article;
-    }
+    if (!article) continue;
+
+    const used = usedSections[article.title] || [];
+    const fresh = article.sections.filter((s) => !used.includes(s.name));
+    if (fresh.length === 0) continue;
+
+    // сначала введение (самое общее), дальше — случайный раздел
+    const section =
+      fresh[0].name === INTRO ? fresh[0] : fresh[Math.floor(Math.random() * fresh.length)];
+    const anchor = section.name === INTRO ? "" : `#${encodeURIComponent(section.name.replace(/ /g, "_"))}`;
+
+    return {
+      title: article.title,
+      text: section.text,
+      section: section.name,
+      sectionsLeft: fresh.length - 1,
+      imageUrl: article.imageUrl,
+      url: article.url + anchor,
+    };
   }
 
   return null; // не нашли ничего нового
