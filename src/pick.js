@@ -27,22 +27,27 @@ function pickRegionAndTheme(regions, themes, lastPick) {
   return { region, theme };
 }
 
-const CONTENT_TYPES = ["region", "popculture", "museum"];
+// Канал — в первую очередь про историю. Поп-культура — редкая приправа:
+// исторический пост, в котором есть отсылка к фильму/книге/комиксу.
+const CONTENT_TYPES = [
+  { key: "region", weight: 75 },
+  { key: "museum", weight: 20 },
+  { key: "popculture", weight: 5 },
+];
 
-// Выбирает тип контента дня: обычная статья по региону, поп-культура или
-// музейный экспонат. Все три равновероятны и независимы день ото дня —
-// раньше тут была защита от повтора popculture/museum два дня подряд,
-// но она имела смысл только пока эти типы были редкими на фоне региона
-// (60%). Теперь все типы равноправны, и повтор одного не более "аномален",
-// чем повтор другого — специальный случай только портил бы равномерность.
-function pickContentType() {
-  return CONTENT_TYPES[Math.floor(Math.random() * CONTENT_TYPES.length)];
+// Выбирает тип контента дня. Поп-культура никогда не выпадает два дня подряд.
+function pickContentType(lastPick) {
+  const pool =
+    lastPick?.type === "popculture"
+      ? CONTENT_TYPES.filter((t) => t.key !== "popculture")
+      : CONTENT_TYPES;
+  return weightedRandom(pool).key;
 }
 
-function pickPopCultureTopic(topics, shownTitles) {
-  const unseen = topics.filter((t) => !shownTitles.includes(t.title));
-  const pool = unseen.length > 0 ? unseen : topics; // если всё показали - начинаем по новой
-  return pool[Math.floor(Math.random() * pool.length)];
+// Список поисковых фраз региона под тему (например, geoTerms для географии)
+function termsFor(region, theme) {
+  const terms = theme.termsKey && region[theme.termsKey];
+  return terms?.length ? terms : region.searchTerms;
 }
 
 // Музейные предметы Smithsonian есть смысл искать только для регионов,
@@ -57,6 +62,6 @@ module.exports = {
   weightedRandom,
   pickRegionAndTheme,
   pickContentType,
-  pickPopCultureTopic,
+  termsFor,
   pickMuseumRegionAndTheme,
 };

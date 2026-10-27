@@ -54,12 +54,41 @@ async function getArticle(title) {
   return {
     title: page.title,
     text: page.extract,
-    imageUrl: page.thumbnail?.source || null,
+    imageUrl: page.thumbnail?.source || (await findArticleImage(page.title)),
     url: `https://ru.wikipedia.org/wiki/${encodeURIComponent(
       page.title.replace(/ /g, "_")
     )}`,
   };
 }
+
+// У многих статей нет "главной" картинки (pageimages), хотя в тексте есть
+// карты, фото и гравюры — а для истории и географии картинка очень важна.
+// REST media-list отдаёт картинки в порядке появления в статье; showInGallery
+// отсекает иконки навигационных шаблонов. Ошибка здесь не должна ронять пост.
+async function findArticleImage(title) {
+  try {
+    const url = `https://ru.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(
+      title.replace(/ /g, "_")
+    )}`;
+    const res = await fetchWiki(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const image = (data.items || []).find(
+      (i) => i.type === "image" && i.showInGallery && i.srcset?.length
+    );
+    if (!image) return null;
+    const src = image.srcset[image.srcset.length - 1].src;
+    return src.startsWith("//") ? `https:${src}` : src;
+  } catch (err) {
+    console.warn(`Не удалось найти картинку для "${title}":`, err.message);
+    return null;
+  }
+}
+
+// Статьи о современных произведениях, людях шоу-бизнеса и т.п. — поиск по
+// "Согдиана" или "Манас" иногда приводит к певице или аэропорту
+const OFF_TOPIC_TITLE =
+  /\((значения|фильм[^)]*|телесериал[^)]*|сериал[^)]*|мультфильм[^)]*|певица|певец|рэпер|группа|альбом|песня|сингл|игра|компьютерная игра|аэропорт|футбольный клуб|телепередача)\)/i;
 
 // Собирает пул кандидатов сразу из нескольких поисковых фраз — так среди
 // кандидатов чаще попадаются не только первые попавшиеся "статьи-зонтики"
@@ -72,7 +101,7 @@ async function collectCandidates(searchTerms, shownTitles, { termsToTry = 3, per
   for (const term of shuffled) {
     const titles = await searchArticles(term, perTerm);
     for (const title of titles) {
-      if (!seen.has(title) && !shownTitles.includes(title)) {
+      if (!seen.has(title) && !shownTitles.includes(title) && !OFF_TOPIC_TITLE.test(title)) {
         seen.add(title);
         candidates.push(title);
       }

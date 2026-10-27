@@ -1,15 +1,15 @@
-const { REGIONS, THEMES, POP_CULTURE_TOPICS } = require("./src/config");
+const { REGIONS, THEMES } = require("./src/config");
 const {
   pickRegionAndTheme,
   pickContentType,
-  pickPopCultureTopic,
   pickMuseumRegionAndTheme,
+  termsFor,
 } = require("./src/pick");
 const { findUnseenArticle } = require("./src/wikipedia");
 const { findUnseenArtifact } = require("./src/smithsonian");
 const {
   rewriteAsFact,
-  generatePopCultureFact,
+  rewriteWithPopCultureLink,
   rewriteArtifactAsFact,
   pickMostInteresting,
 } = require("./src/claude");
@@ -28,24 +28,22 @@ async function main() {
   }
 
   const history = loadHistory();
-  const type = pickContentType();
+  const type = pickContentType(history.lastPick);
   const ctx = { chatId, botToken };
 
   let posted;
-  if (type === "popculture") {
-    posted = await runPopCulture(history, ctx);
-  } else if (type === "museum") {
+  if (type === "museum") {
     posted = await runMuseumArtifact(history, ctx);
   } else {
-    posted = await runRegionTheme(history, ctx);
+    posted = await runRegionTheme(history, ctx, { popCulture: type === "popculture" });
   }
 
   // Основной выбор мог не найти материала (редко, но возможно) — вместо
-  // тишины в канале пробуем запасной вариант, поп-культура почти всегда
-  // находит что показать
-  if (!posted && type !== "popculture") {
-    console.warn("Основной тип контента ничего не нашёл, пробуем поп-культуру как запасной вариант.");
-    posted = await runPopCulture(history, ctx);
+  // тишины в канале пробуем обычный исторический пост ещё раз (новая пара
+  // региона/темы выпадет случайно)
+  if (!posted) {
+    console.warn("Основной тип контента ничего не нашёл, пробуем обычный исторический пост.");
+    posted = await runRegionTheme(history, ctx);
   }
 
   if (!posted) {
@@ -53,46 +51,15 @@ async function main() {
   }
 }
 
-async function runPopCulture(history, { chatId, botToken }) {
-  const topic = pickPopCultureTopic(POP_CULTURE_TOPICS, history.shownTitles);
-
-  console.log(`Выбрано: поп-культура, тема="${topic.title}" (verified=${topic.verified})`);
-
-  const factText = await generatePopCultureFact({
-    topicTitle: topic.title,
-    topicNote: topic.note,
-    verified: topic.verified,
-  });
-
-  if (!factText) {
-    throw new Error("Gemini не вернул текст факта (поп-культура)");
-  }
-
-  await sendFact({
-    chatId,
-    botToken,
-    factText,
-    imageUrl: null,
-    sourceUrl: null,
-    regionName: "Поп-культура и история",
-    themeName: topic.title,
-    unverified: !topic.verified,
-  });
-
-  console.log("Сообщение отправлено в Telegram");
-
-  history.shownTitles.push(topic.title);
-  history.lastPick = { type: "popculture", topic: topic.title };
-  saveHistory(history);
-  return true;
-}
-
-async function runRegionTheme(history, { chatId, botToken }) {
+// popCulture: true — тот же исторический пост, но Gemini пробует добавить
+// отсылку к фильму/книге/комиксу, реально связанному с темой статьи.
+// Если надёжной связи нет — выходит обычный исторический пост.
+async function runRegionTheme(history, { chatId, botToken }, { popCulture = false } = {}) {
   const { region, theme } = pickRegionAndTheme(REGIONS, THEMES, history.lastPick);
 
-  console.log(`Выбрано: регион="${region.name}", тема="${theme.name}"`);
+  console.log(`Выбрано: регион="${region.name}", тема="${theme.name}", поп-культура=${popCulture}`);
 
-  const article = await findUnseenArticle(region.searchTerms, history.shownTitles, {
+  const article = await findUnseenArticle(termsFor(region, theme), history.shownTitles, {
     chooseTitle: (candidates) =>
       pickMostInteresting(candidates, { regionName: region.name, themeName: theme.name }),
   });
@@ -104,13 +71,22 @@ async function runRegionTheme(history, { chatId, botToken }) {
 
   console.log(`Статья найдена: "${article.title}"`);
 
-  const factText = await rewriteAsFact({
+  const factArgs = {
     articleText: article.text,
     articleTitle: article.title,
     regionName: region.name,
     themeName: theme.name,
     themeLens: theme.lens,
-  });
+  };
+
+  let factText = popCulture ? await rewriteWithPopCultureLink(factArgs) : null;
+  const withPopCulture = Boolean(factText);
+  if (popCulture && !withPopCulture) {
+    console.log("Надёжной связи с поп-культурой нет — публикуем обычный исторический пост.");
+  }
+  if (!factText) {
+    factText = await rewriteAsFact(factArgs);
+  }
 
   if (!factText) {
     throw new Error("Gemini не вернул текст факта");
@@ -123,13 +99,17 @@ async function runRegionTheme(history, { chatId, botToken }) {
     imageUrl: article.imageUrl,
     sourceUrl: article.url,
     regionName: region.name,
-    themeName: theme.name,
+    themeName: withPopCulture ? `${theme.name} · Поп-культура` : theme.name,
   });
 
   console.log("Сообщение отправлено в Telegram");
 
   history.shownTitles.push(article.title);
-  history.lastPick = { type: "region", region: region.key, theme: theme.key };
+  history.lastPick = {
+    type: withPopCulture ? "popculture" : "region",
+    region: region.key,
+    theme: theme.key,
+  };
   saveHistory(history);
   return true;
 }
