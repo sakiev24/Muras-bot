@@ -50,9 +50,17 @@
     "Эмир Бухары",
     "Сеньор Сарка"
   ],
+  "usedSections": {
+    "Алимкул": [
+      "Введение"
+    ]
+  },
+  "recentTitles": [
+    "Алимкул"
+  ],
   "lastPick": {
     "type": "region",
-    "region": "west",
-    "theme": "politics"
+    "region": "kg",
+    "theme": "philosophy"
   }
 }
