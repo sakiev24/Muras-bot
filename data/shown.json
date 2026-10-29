@@ -53,14 +53,18 @@
   "usedSections": {
     "Алимкул": [
       "Введение"
+    ],
+    "Жертвоприношения ацтеков": [
+      "Введение"
     ]
   },
   "recentTitles": [
-    "Алимкул"
+    "Алимкул",
+    "Жертвоприношения ацтеков"
   ],
   "lastPick": {
     "type": "region",
-    "region": "kg",
-    "theme": "philosophy"
+    "region": "latam",
+    "theme": "culture"
   }
 }
